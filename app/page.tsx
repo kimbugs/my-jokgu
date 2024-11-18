@@ -1,17 +1,27 @@
-import Head from "next/head";
+import { auth } from "@/auth";
+import Logout from "@/components/logout";
+import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
   return (
-    <main className="flex justify-center items-center min-h-screen">
-      <div className="text-center p-6">
-        <h2 className="text-3xl font-semibold mb-4">
-          Welcome to Next.js with DaisyUI
-        </h2>
-        <p className="mb-6 text-lg">
-          This is a simple template using Next.js and DaisyUI!
-        </p>
-        <button className="btn btn-primary">Click Me!</button>
+    <div>
+      <h2 className="text-3xl font-semibold mb-4">
+        Welcome to Next.js with DaisyUI
+      </h2>
+      <div className="mb-6 text-lg">
+        {session?.user ? (
+          <div>
+            {session?.user.userId}, {session?.user.name}, {session?.user.role}
+          </div>
+        ) : (
+          <div>Need Login</div>
+        )}
       </div>
-    </main>
+      <Link href={"/signin"} className="btn btn-primary">
+        Login
+      </Link>
+      <Logout />
+    </div>
   );
 }
