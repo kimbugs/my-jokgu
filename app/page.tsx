@@ -135,23 +135,23 @@ export default function Main() {
                   onClick={() => handleCardClick("team1")}
                   className={`p-4 border rounded-lg shadow-md cursor-pointer transition-all ${
                     winningTeam === "team1"
-                      ? "border-blue-500 bg-blue-100"
-                      : "border-gray-300"
+                      ? "border-blue-500 bg-blue-100 dark:border-blue-700 dark:bg-blue-900"
+                      : "border-gray-300 dark:border-gray-700 dark:bg-gray-800"
                   }`}
                 >
-                  <h3 className="text-lg font-semibold mb-4 text-center">
+                  <h3 className="text-lg font-semibold mb-4 text-center text-gray-800 dark:text-white">
                     Team 1
                   </h3>
                   <div className="space-y-2">
                     {team1.length === 0 ? (
-                      <div className="text-gray-500 text-sm text-center">
+                      <div className="text-gray-500 text-sm text-center dark:text-gray-400">
                         No members selected
                       </div>
                     ) : (
                       team1.map((member) => (
                         <div
                           key={member}
-                          className="p-2 text-sm border rounded-lg shadow bg-gray-100"
+                          className="p-2 text-sm border rounded-lg shadow bg-gray-100 dark:bg-gray-700 dark:text-white"
                         >
                           {member}
                         </div>
@@ -165,23 +165,23 @@ export default function Main() {
                   onClick={() => handleCardClick("team2")}
                   className={`p-4 border rounded-lg shadow-md cursor-pointer transition-all ${
                     winningTeam === "team2"
-                      ? "border-blue-500 bg-blue-100"
-                      : "border-gray-300"
+                      ? "border-blue-500 bg-blue-100 dark:border-blue-700 dark:bg-blue-900"
+                      : "border-gray-300 dark:border-gray-700 dark:bg-gray-800"
                   }`}
                 >
-                  <h3 className="text-lg font-semibold mb-4 text-center">
+                  <h3 className="text-lg font-semibold mb-4 text-center text-gray-800 dark:text-white">
                     Team 2
                   </h3>
                   <div className="space-y-2">
                     {team2.length === 0 ? (
-                      <div className="text-gray-500 text-sm text-center">
+                      <div className="text-gray-500 text-sm text-center dark:text-gray-400">
                         No members selected
                       </div>
                     ) : (
                       team2.map((member) => (
                         <div
                           key={member}
-                          className="p-2 text-sm border rounded-lg shadow bg-gray-100"
+                          className="p-2 text-sm border rounded-lg shadow bg-gray-100 dark:bg-gray-700 dark:text-white"
                         >
                           {member}
                         </div>
