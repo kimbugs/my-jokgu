@@ -2,16 +2,17 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { db } from "./lib/db";
+import prisma from "./lib/db";
 import { saltAndHashPassword } from "./utils/helper";
 
+prisma;
 export const {
   handlers: { GET, POST },
   signIn,
   signOut,
   auth,
 } = NextAuth({
-  adapter: PrismaAdapter(db),
+  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   providers: [
     Credentials({
@@ -31,7 +32,7 @@ export const {
         const id = credentials.id as string;
         const password = saltAndHashPassword(credentials.password);
 
-        let user: any = await db.user.findUnique({
+        let user: any = await prisma.user.findUnique({
           where: {
             userId: id,
           },

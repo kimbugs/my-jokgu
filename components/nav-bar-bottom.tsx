@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export default function BottomNav() {
@@ -7,7 +8,7 @@ export default function BottomNav() {
   return (
     <div className="btm-nav ">
       {/* 홈 */}
-      <a
+      <Link
         href="/"
         className={`btm-nav-item ${activeTab === "home" ? "active" : ""}`}
         onClick={() => setActiveTab("home")}
@@ -26,10 +27,10 @@ export default function BottomNav() {
           />
         </svg>
         <span className="btm-nav-label">Home</span>
-      </a>
+      </Link>
 
       {/* 검색 */}
-      <a
+      <Link
         href="#"
         className={`btm-nav-item ${activeTab === "game" ? "active" : ""}`}
         onClick={() => setActiveTab("game")}
@@ -48,10 +49,10 @@ export default function BottomNav() {
           />
         </svg>
         <span className="btm-nav-label">Game</span>
-      </a>
+      </Link>
 
       {/* 알림 */}
-      <a
+      <Link
         href="/notifications"
         className={`btm-nav-item ${
           activeTab === "notifications" ? "active" : ""
@@ -72,10 +73,10 @@ export default function BottomNav() {
           />
         </svg>
         <span className="btm-nav-label">Notifications</span>
-      </a>
+      </Link>
 
       {/* 프로필 */}
-      <a
+      <Link
         href="#"
         className={`btm-nav-item ${activeTab === "profile" ? "active" : ""}`}
         onClick={() => setActiveTab("profile")}
@@ -94,7 +95,7 @@ export default function BottomNav() {
           />
         </svg>
         <span className="btm-nav-label">Profile</span>
-      </a>
+      </Link>
     </div>
   );
 }

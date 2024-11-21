@@ -4,10 +4,7 @@ import { loginWithCreds } from "@/actions/auth";
 import { useActionState } from "react";
 
 export default function SignIn() {
-  const [errorMessage, formAction, isPending] = useActionState(
-    loginWithCreds,
-    undefined
-  );
+  const [, formAction, isPending] = useActionState(loginWithCreds, undefined);
   return (
     <div className="w-full flex mt-20 justify-center">
       <section className="flex flex-col w-[400px]">

@@ -1,4 +1,3 @@
-import { logout } from "@/actions/auth";
 import { auth } from "@/auth";
 import Logout from "./logout";
 import Link from "next/link";
@@ -59,10 +58,10 @@ export default async function TopNav() {
             className="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
           >
             <li>
-              <a href="/">Profile</a>
+              <Link href="/">Profile</Link>
             </li>
             <li>
-              <a href="/">Settings</a>
+              <Link href="/">Settings</Link>
             </li>
             <li>
               {session?.user ? (

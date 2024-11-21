@@ -28,7 +28,7 @@ export default function Game() {
       </div>
       <div className="grid gap-4">
         <div key="a" className="border p-4 rounded-lg shadow">
-          <p className="font-bold">a"</p>
+          <p className="font-bold">a</p>
           <p className="text-gray-600">b</p>
           <p className="text-sm text-gray-500">
             Joined: {new Date().toLocaleString()}
