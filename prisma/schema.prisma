@@ -27,3 +27,16 @@ model User {
   role      UserRole?   @default(USER)
   
 }
+model Player {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String     @unique
+  win         Int        @default(0)
+  loss        Int        @default(0)
+}
+
+model GameResult {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  date        DateTime @default(now())
+  winPlayerIds String[] @db.ObjectId
+  lossPlayerIds String[] @db.ObjectId
+}

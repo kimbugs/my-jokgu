@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## TODO
+
+- game result를 화면에 표출
+- game result 화면에서 수정 삭제 기능
+- game result에서는 날짜별로 볼 수 있어야함
+
 ## Getting Started
 
 First, run the development server:
