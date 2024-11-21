@@ -8,7 +8,7 @@ export default function BottomNav() {
     <div className="btm-nav ">
       {/* 홈 */}
       <a
-        href="#"
+        href="/"
         className={`btm-nav-item ${activeTab === "home" ? "active" : ""}`}
         onClick={() => setActiveTab("home")}
       >
@@ -31,8 +31,8 @@ export default function BottomNav() {
       {/* 검색 */}
       <a
         href="#"
-        className={`btm-nav-item ${activeTab === "search" ? "active" : ""}`}
-        onClick={() => setActiveTab("search")}
+        className={`btm-nav-item ${activeTab === "game" ? "active" : ""}`}
+        onClick={() => setActiveTab("game")}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -47,12 +47,12 @@ export default function BottomNav() {
             d="M10 19l-7-7m0 0l7-7m-7 7h16"
           />
         </svg>
-        <span className="btm-nav-label">Search</span>
+        <span className="btm-nav-label">Game</span>
       </a>
 
       {/* 알림 */}
       <a
-        href="#"
+        href="/notifications"
         className={`btm-nav-item ${
           activeTab === "notifications" ? "active" : ""
         }`}

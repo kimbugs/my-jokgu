@@ -3,7 +3,7 @@ import { logout } from "@/actions/auth";
 
 const Logout = () => {
   return (
-    <button className="btn btn-primary" onClick={() => logout()}>
+    <button className="btn-neutral btn btn-block" onClick={() => logout()}>
       Logout
     </button>
   );

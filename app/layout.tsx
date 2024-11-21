@@ -36,9 +36,7 @@ export default async function RootLayout({
         >
           <div className="h-full bg-base-200 flex flex-col">
             <TopNav />
-            <main className="flex justify-center items-center flex-grow">
-              <div className="text-center p-6">{children}</div>
-            </main>
+            <div>{children}</div>
             <BottomNav />
           </div>
         </body>

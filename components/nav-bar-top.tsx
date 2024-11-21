@@ -1,4 +1,10 @@
-export default function TopNav() {
+import { logout } from "@/actions/auth";
+import { auth } from "@/auth";
+import Logout from "./logout";
+import Link from "next/link";
+
+export default async function TopNav() {
+  const session = await auth();
   return (
     <div className="navbar shadow-lg">
       {/* 왼쪽: 메뉴 아이콘과 이름 */}
@@ -34,7 +40,7 @@ export default function TopNav() {
             </li>
           </ul>
         </div>
-        <span className="text-lg font-bold ml-2">MyApp</span>
+        <span className="text-lg font-bold ml-2">족구</span>
       </div>
 
       {/* 오른쪽: 사용자 정보 */}
@@ -45,7 +51,7 @@ export default function TopNav() {
             className="btn btn-ghost btn-circle avatar bg-gray-400 placeholder"
           >
             <div className="bg-neutral text-neutral-content w-12 rounded-full">
-              <span className="text-xl">강산</span>
+              <span className="text-xl">{session?.user.name}</span>
             </div>
           </div>
           <ul
@@ -59,7 +65,13 @@ export default function TopNav() {
               <a href="/">Settings</a>
             </li>
             <li>
-              <a href="/">Logout</a>
+              {session?.user ? (
+                <Logout />
+              ) : (
+                <Link href={"/auth/login"} className="btn btn-neutral">
+                  Login
+                </Link>
+              )}
             </li>
           </ul>
         </div>

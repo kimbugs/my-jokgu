@@ -38,14 +38,14 @@ export const {
         });
 
         if (!user) {
-          user = await db.user.create({
-            data: {
-              userId: id,
-              name: "test",
-              password: password,
-              role: "USER",
-            },
-          });
+          // user = await db.user.create({
+          //   data: {
+          //     userId: id,
+          //     name: "test",
+          //     password: password,
+          //     role: "USER",
+          //   },
+          // });
           throw new Error("Incorrect user");
         } else {
           const isMatch = bcrypt.compareSync(
