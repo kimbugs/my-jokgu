@@ -1,13 +1,13 @@
 "use server";
 
 import { signIn, signOut } from "@/auth";
-import { db } from "@/lib/db";
+import prisma from "@/lib/db";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 
 const getUserById = async (id: string) => {
   try {
-    const user = await db.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         userId: id,
       },
