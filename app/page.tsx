@@ -1,221 +1,306 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "checkboxListState";
+interface Player {
+  id: string;
+  name: string;
+  win: number;
+  loss: number;
+  selected: boolean;
+}
 
-export default function Main() {
-  const options = [
-    "강산",
-    "커두",
-    "바키",
-    "푸름",
-    "영쿠",
-    "서재",
-    "빵길",
-    "성현",
-    "광해",
-    "영호",
-    "승민",
-  ];
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [team1, setTeam1] = useState<string[]>([]);
-  const [team2, setTeam2] = useState<string[]>([]);
+const TodaysGame = () => {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [team1, setTeam1] = useState<Player[]>([]);
+  const [team2, setTeam2] = useState<Player[]>([]);
+  const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
   const [winningTeam, setWinningTeam] = useState<"team1" | "team2" | null>(
     null
   );
-  const [loading, setLoading] = useState(true);
+  const [recentGameResult, setRecentGameResult] = useState<{
+    date: string;
+    winPlayers: string[];
+    lossPlayers: string[];
+  } | null>(null);
 
-  // 초기 로드 시 Local Storage에서 상태 복원
+  // 페이지 로드 시 Local Storage에서 저장된 플레이어와 팀 정보 불러오기
   useEffect(() => {
-    const savedState = localStorage.getItem(STORAGE_KEY);
-    if (savedState) {
+    const storedPlayers = localStorage.getItem("selectedPlayers");
+    const storedTeam1 = localStorage.getItem("team1");
+    const storedTeam2 = localStorage.getItem("team2");
+    const storedWinningTeam = localStorage.getItem("winningTeam");
+
+    // 플레이어 API 호출
+    const fetchPlayers = async () => {
       try {
-        const { selectedItems, team1, team2, winningTeam } =
-          JSON.parse(savedState);
-        setSelectedItems(selectedItems || []);
-        setTeam1(team1 || []);
-        setTeam2(team2 || []);
-        setWinningTeam(winningTeam || null);
+        const response = await fetch("/api/player"); // API URL 변경
+        const data = await response.json();
+        setPlayers(data);
+
+        // LocalStorage에 저장된 선택된 플레이어가 있을 경우
+        if (storedPlayers) {
+          const selectedFromLocalStorage = JSON.parse(storedPlayers);
+          setSelectedPlayers(selectedFromLocalStorage);
+
+          // players 상태에서 selected 상태 업데이트
+          const updatedPlayers = data.map((player: { id: string }) => ({
+            ...player,
+            selected: selectedFromLocalStorage.some(
+              (selectedPlayer: Player) => selectedPlayer.id === player.id
+            ),
+          }));
+          setPlayers(updatedPlayers);
+        }
       } catch (error) {
-        console.error("Error parsing localStorage data:", error);
+        console.error("Failed to fetch players:", error);
       }
+    };
+
+    fetchPlayers();
+
+    if (storedTeam1) {
+      setTeam1(JSON.parse(storedTeam1));
     }
-    setLoading(false);
+    if (storedTeam2) {
+      setTeam2(JSON.parse(storedTeam2));
+    }
+    if (storedWinningTeam) {
+      setWinningTeam(storedWinningTeam === "team1" ? "team1" : "team2");
+    }
   }, []);
 
-  // 상태 변경 시 Local Storage에 저장
-  useEffect(() => {
-    if (!loading) {
-      const state = { selectedItems, team1, team2, winningTeam };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-  }, [selectedItems, team1, team2, winningTeam, loading]);
-
-  // 선택 또는 해제된 항목 처리
-  const handleTagClick = (item: string) => {
-    setSelectedItems((prevSelectedItems) => {
-      if (prevSelectedItems.includes(item)) {
-        // 이미 선택된 항목이 클릭되면 제거
-        return prevSelectedItems.filter(
-          (selectedItem) => selectedItem !== item
-        );
-      } else {
-        // 선택되지 않은 항목이 클릭되면 추가
-        return [...prevSelectedItems, item];
+  // 플레이어 선택 핸들러
+  const togglePlayerSelection = (playerId: string) => {
+    const updatedPlayers = players.map((player) => {
+      if (player.id === playerId) {
+        player.selected = !player.selected;
       }
+      return player;
     });
+
+    setPlayers(updatedPlayers);
+
+    const selected = updatedPlayers.filter((player) => player.selected);
+    setSelectedPlayers(selected);
+
+    // Local Storage에 선택된 플레이어 저장
+    localStorage.setItem("selectedPlayers", JSON.stringify(selected));
   };
 
-  // 랜덤으로 팀 나누기
-  const handleRandomTeams = () => {
-    const shuffledItems = [...selectedItems].sort(() => Math.random() - 0.5);
-    const midIndex = Math.ceil(shuffledItems.length / 2);
-    setTeam1(shuffledItems.slice(0, midIndex));
-    setTeam2(shuffledItems.slice(midIndex));
-    setWinningTeam(null); // 팀을 나누면 승리 팀은 초기화
+  // 팀 분배 핸들러
+  const randomizeTeams = () => {
+    // 승리팀 초기화
+    setWinningTeam(null);
+
+    const shuffledPlayers = [...selectedPlayers].sort(
+      () => Math.random() - 0.5
+    );
+    const newTeam1 = shuffledPlayers.slice(0, shuffledPlayers.length / 2);
+    const newTeam2 = shuffledPlayers.slice(shuffledPlayers.length / 2);
+    setTeam1(newTeam1);
+    setTeam2(newTeam2);
+
+    // Local Storage에 팀 정보 저장
+    localStorage.setItem("team1", JSON.stringify(newTeam1));
+    localStorage.setItem("team2", JSON.stringify(newTeam2));
+    localStorage.setItem("winningTeam", "");
   };
 
-  // 팀 카드 클릭 시 승리 팀 설정
-  const handleCardClick = (team: "team1" | "team2") => {
+  // 팀 승리 처리
+  const handleTeamSelection = (team: "team1" | "team2") => {
     setWinningTeam(team);
+
+    // Local Storage에 승리 팀 정보 저장
+    localStorage.setItem("winningTeam", team);
   };
 
-  if (loading) {
-    // 로딩 중일 때 간단한 로딩 UI 표시
-    return <div className="text-center text-gray-500">Loading...</div>;
-  }
+  // 승률 계산 함수
+  const calculateWinRate = (win: number, loss: number) => {
+    return win + loss === 0 ? 0 : (win / (win + loss)) * 100;
+  };
+
+  // 팀 평균 승률 계산 함수 (승률이 0%인 플레이어 제외)
+  const calculateTeamAverageWinRate = (team: Player[]) => {
+    const validPlayers = team.filter(
+      (player) => calculateWinRate(player.win, player.loss) > 0
+    ); // 0% 승률 제외
+    if (validPlayers.length === 0) return "0"; // 유효한 플레이어가 없으면 0%
+    const totalWinRate = validPlayers.reduce(
+      (sum, player) => sum + calculateWinRate(player.win, player.loss),
+      0
+    );
+    return (totalWinRate / validPlayers.length).toFixed(2);
+  };
+
+  // GameResult 저장하는 함수
+  const saveGameResult = async () => {
+    const winPlayerIds = (winningTeam === "team1" ? team1 : team2).map(
+      (player) => player.id
+    );
+    const lossPlayerIds = (winningTeam === "team1" ? team2 : team1).map(
+      (player) => player.id
+    );
+
+    // API를 통해 게임 결과 저장
+    try {
+      const response = await fetch("/api/game", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ winPlayerIds, lossPlayerIds }),
+      });
+
+      if (response.ok) {
+        // const result = await response.json();
+
+        // 최근 저장한 GameResult 내용을 업데이트
+        setRecentGameResult({
+          date: new Date().toLocaleString(),
+          // date: result.date,
+          winPlayers: (winningTeam === "team1" ? team1 : team2).map(
+            (player) => player.name
+          ),
+          lossPlayers: (winningTeam === "team1" ? team2 : team1).map(
+            (player) => player.name
+          ),
+        });
+        // 팀 및 승리 상태 초기화
+        setTeam1([]);
+        setTeam2([]);
+        setWinningTeam(null);
+
+        // Local Storage 초기화
+        localStorage.removeItem("team1");
+        localStorage.removeItem("team2");
+        localStorage.removeItem("winningTeam");
+        console.log("Game result saved successfully");
+      } else {
+        console.error("Failed to save game result");
+      }
+    } catch (error) {
+      console.error("Error saving game result:", error);
+    }
+  };
+
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-xl font-bold">
-          오늘의 게임 ({new Date().toLocaleDateString()})
-        </h1>
+    <div className="max-w-3xl mx-auto p-4 bg-white shadow-md rounded-md">
+      <h2 className="text-xl font-semibold text-center mb-4">
+        Today's Game ({new Date().toLocaleDateString()})
+      </h2>
+
+      {/* 플레이어 선택 */}
+      <div className="mb-6 flex flex-wrap gap-2 justify-center">
+        {players.map((player) => (
+          <button
+            key={player.id}
+            onClick={() => togglePlayerSelection(player.id)}
+            className={`px-4 py-2 rounded-full text-sm ${
+              player.selected
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            {player.name}
+          </button>
+        ))}
       </div>
-      <div className="grid gap-4">
-        <div className="border p-1 rounded-lg shadow">
-          <div className="p-1">
-            <h2 className="text-xl font-semibold">인원</h2>
 
-            {/* 태그 형태의 선택 항목 */}
-            <div className="flex flex-wrap gap-4 mt-4">
-              {options.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => handleTagClick(option)}
-                  className={`px-4 py-2 rounded-full cursor-pointer transition-all ${
-                    selectedItems.includes(option)
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-black"
-                  }`}
-                >
-                  {option}
-                </button>
+      {/* 팀 분배 버튼 */}
+      <div className="text-center mb-6">
+        <button
+          onClick={randomizeTeams}
+          disabled={selectedPlayers.length < 2}
+          className="px-4 py-2 bg-green-500 text-white rounded-md"
+        >
+          Randomize Teams
+        </button>
+      </div>
+
+      {/* 팀 1과 팀 2 카드 */}
+      {team1.length > 0 && team2.length > 0 && (
+        <div className="grid grid-cols-2 gap-4">
+          <div
+            className={`p-4 rounded-md ${
+              winningTeam === "team1" ? "bg-green-100" : "bg-gray-100"
+            }`}
+            onClick={() => handleTeamSelection("team1")}
+          >
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold mb-2">Team 1</h3>
+              <span className="text-sm text-gray-700">
+                {calculateTeamAverageWinRate(team1)}%
+              </span>
+            </div>
+            <ul className="list-disc pl-5">
+              {team1.map((player) => (
+                <li key={player.id} className="text-sm">
+                  {player.name}
+                </li>
               ))}
-            </div>
-
-            {/* 선택된 항목 출력 */}
-            <div className="mt-4">
-              <strong>참여자:</strong>{" "}
-              {selectedItems.length > 0 ? selectedItems.join(", ") : "None"}
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={handleRandomTeams}
-                className="btn-neutral btn btn-block"
-              >
-                랜덤게임
-              </button>
-            </div>
-
-            {/* 두 팀 카드 출력 */}
-            {selectedItems.length > 0 && (
-              <div className="mt-8 grid grid-cols-2 gap-4">
-                {/* Team 1 */}
-                <div
-                  onClick={() => handleCardClick("team1")}
-                  className={`p-4 border rounded-lg shadow-md cursor-pointer transition-all ${
-                    winningTeam === "team1"
-                      ? "border-blue-500 bg-blue-100 dark:border-blue-700 dark:bg-blue-900"
-                      : "border-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                  }`}
-                >
-                  <h3 className="text-lg font-semibold mb-4 text-center text-gray-800 dark:text-white">
-                    Team 1
-                  </h3>
-                  <div className="space-y-2">
-                    {team1.length === 0 ? (
-                      <div className="text-gray-500 text-sm text-center dark:text-gray-400">
-                        No members selected
-                      </div>
-                    ) : (
-                      team1.map((member) => (
-                        <div
-                          key={member}
-                          className="p-2 text-sm border rounded-lg shadow bg-gray-100 dark:bg-gray-700 dark:text-white"
-                        >
-                          {member}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Team 2 */}
-                <div
-                  onClick={() => handleCardClick("team2")}
-                  className={`p-4 border rounded-lg shadow-md cursor-pointer transition-all ${
-                    winningTeam === "team2"
-                      ? "border-blue-500 bg-blue-100 dark:border-blue-700 dark:bg-blue-900"
-                      : "border-gray-300 dark:border-gray-700 dark:bg-gray-800"
-                  }`}
-                >
-                  <h3 className="text-lg font-semibold mb-4 text-center text-gray-800 dark:text-white">
-                    Team 2
-                  </h3>
-                  <div className="space-y-2">
-                    {team2.length === 0 ? (
-                      <div className="text-gray-500 text-sm text-center dark:text-gray-400">
-                        No members selected
-                      </div>
-                    ) : (
-                      team2.map((member) => (
-                        <div
-                          key={member}
-                          className="p-2 text-sm border rounded-lg shadow bg-gray-100 dark:bg-gray-700 dark:text-white"
-                        >
-                          {member}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
+            </ul>
+            {winningTeam === "team1" && (
+              <div className="mt-2 text-green-600 font-semibold">
+                Winning Team!
               </div>
             )}
+          </div>
 
-            {/* 승리 팀 표시 */}
-            {winningTeam && (
-              <div className="mt-4 text-xl font-bold text-center">
-                <p
-                  className={`text-${
-                    winningTeam === "team1" ? "blue" : "red"
-                  }-500`}
-                >
-                  {winningTeam === "team1" ? "Team 1 Wins!" : "Team 2 Wins!"}
-                </p>
+          <div
+            className={`p-4 rounded-md ${
+              winningTeam === "team2" ? "bg-green-100" : "bg-gray-100"
+            }`}
+            onClick={() => handleTeamSelection("team2")}
+          >
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold mb-2">Team 2</h3>
+              <span className="text-sm text-gray-700">
+                {calculateTeamAverageWinRate(team2)}%
+              </span>
+            </div>
+            <ul className="list-disc pl-5">
+              {team2.map((player) => (
+                <li key={player.id} className="text-sm">
+                  {player.name}
+                </li>
+              ))}
+            </ul>
+            {winningTeam === "team2" && (
+              <div className="mt-2 text-green-600 font-semibold">
+                Winning Team!
               </div>
             )}
           </div>
         </div>
+      )}
+      {/* 저장 버튼 */}
+      <div className="text-center mt-6">
+        <button
+          onClick={saveGameResult}
+          disabled={!winningTeam}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md"
+        >
+          Save Game Result
+        </button>
       </div>
-      <div className="grid gap-4">
-        <div key="a" className="border p-4 rounded-lg shadow">
-          <p className="font-bold">a</p>
-          <p className="text-gray-600">b</p>
-          <p className="text-sm text-gray-500">
-            Joined: {new Date().toLocaleString()}
+      {/* 최근 저장한 GameResult 표시 */}
+      {recentGameResult && (
+        <div className="mt-6 p-4 bg-gray-100 text-gray-800 rounded-md">
+          <p className="text-sm">
+            <strong>Date:</strong> {recentGameResult.date}
+          </p>
+          <p className="text-sm">
+            <strong>Winning Team:</strong>{" "}
+            {recentGameResult.winPlayers.join(", ")}
+          </p>
+          <p className="text-sm">
+            <strong>Losing Team:</strong>{" "}
+            {recentGameResult.lossPlayers.join(", ")}
           </p>
         </div>
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default TodaysGame;
