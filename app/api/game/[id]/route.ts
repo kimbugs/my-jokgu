@@ -3,7 +3,7 @@ import prisma from "../../../../lib/db"; // Prisma 클라이언트를 사용하�
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
 
@@ -58,8 +58,11 @@ export async function DELETE(
   }
 }
 
-export async function PUT(req: Request, context: { params: { id: string } }) {
-  const { id } = await context.params;
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
 
   try {
     const { date, winPlayerIds, lossPlayerIds } = await req.json();
