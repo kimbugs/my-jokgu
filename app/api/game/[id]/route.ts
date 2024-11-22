@@ -58,11 +58,8 @@ export async function DELETE(
   }
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const { id } = await params;
+export async function PUT(req: Request, context: { params: { id: string } }) {
+  const { id } = await context.params;
 
   try {
     const { date, winPlayerIds, lossPlayerIds } = await req.json();
