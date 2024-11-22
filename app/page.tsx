@@ -186,7 +186,7 @@ const TodaysGame = () => {
   return (
     <div className="max-w-3xl mx-auto p-4 bg-white shadow-md rounded-md">
       <h2 className="text-xl font-semibold text-center mb-4">
-        Today's Game ({new Date().toLocaleDateString()})
+        Today Game ({new Date().toLocaleDateString()})
       </h2>
 
       {/* 플레이어 선택 */}
@@ -286,6 +286,9 @@ const TodaysGame = () => {
       {/* 최근 저장한 GameResult 표시 */}
       {recentGameResult && (
         <div className="mt-6 p-4 bg-gray-100 text-gray-800 rounded-md">
+          <p className="text-lg">
+            <strong>Recent Game</strong>
+          </p>
           <p className="text-sm">
             <strong>Date:</strong> {recentGameResult.date}
           </p>

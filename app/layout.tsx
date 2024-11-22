@@ -36,7 +36,9 @@ export default async function RootLayout({
         >
           <div className="h-full bg-base-200 flex flex-col">
             <TopNav />
-            <div>{children}</div>
+            <div className="flex-1 mt-[1rem] mb-[4rem] overflow-y-auto">
+              {children}
+            </div>
             <BottomNav />
           </div>
         </body>

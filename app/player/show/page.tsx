@@ -33,7 +33,7 @@ const PlayerList = () => {
         } else {
           setError(data.message || "Failed to fetch players");
         }
-      } catch (err) {
+      } catch {
         setError("Something went wrong");
       } finally {
         setLoading(false);
@@ -74,7 +74,7 @@ const PlayerList = () => {
     let rank = 1;
     return players.map((player, index) => {
       const winRate = calculateWinRate(player.win, player.loss);
-      const totalGames = player.win + player.loss;
+      // const totalGames = player.win + player.loss;
 
       // 첫 번째 값이 아니면, 이전 값과 비교하여 순위를 부여
       if (index > 0) {

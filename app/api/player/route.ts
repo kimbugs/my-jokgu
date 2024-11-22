@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       data: { name },
     });
     return NextResponse.json(player, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error creating player" },
       { status: 500 }
@@ -29,7 +29,7 @@ export async function GET() {
   try {
     const players = await prisma.player.findMany(); // 모든 player를 가져옵니다.
     return NextResponse.json(players);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error fetching players" },
       { status: 500 }

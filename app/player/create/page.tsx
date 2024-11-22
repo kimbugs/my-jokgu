@@ -36,7 +36,7 @@ const PlayerForm = () => {
       } else {
         setError(data.message || "Failed to create player");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong");
     } finally {
       setLoading(false);
