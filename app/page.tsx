@@ -241,7 +241,7 @@ const TodaysGame = () => {
             </div>
             <ul className="list-disc pl-5">
               {team1.map((player) => (
-                <li key={player.id} className="text-sm ">
+                <li key={player.id} className="text-lg">
                   {player.name}
                 </li>
               ))}
@@ -267,7 +267,7 @@ const TodaysGame = () => {
             </div>
             <ul className="list-disc pl-5">
               {team2.map((player) => (
-                <li key={player.id} className="text-sm">
+                <li key={player.id} className="text-lg">
                   {player.name}
                 </li>
               ))}
