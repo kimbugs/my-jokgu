@@ -226,14 +226,14 @@ const TodaysGame = () => {
 
       {/* 팀 1과 팀 2 카드 */}
       {team1.length > 0 && team2.length > 0 && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 text-gray-700">
           <div
             className={`p-4 rounded-md ${
               winningTeam === "team1" ? "bg-green-100" : "bg-gray-100"
             }`}
             onClick={() => handleTeamSelection("team1")}
           >
-            <div className="flex justify-between items-center text-gray-700">
+            <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold mb-2">Team 1</h3>
               <span className="text-sm">
                 {calculateTeamAverageWinRate(team1)}%
