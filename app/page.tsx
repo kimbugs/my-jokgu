@@ -23,6 +23,9 @@ const TodaysGame = () => {
     lossPlayers: string[];
   } | null>(null);
 
+  // 로딩 상태 추가
+  const [loading, setLoading] = useState<boolean>(false);
+
   // 페이지 로드 시 Local Storage에서 저장된 플레이어와 팀 정보 불러오기
   useEffect(() => {
     const storedPlayers = localStorage.getItem("selectedPlayers");
@@ -141,6 +144,8 @@ const TodaysGame = () => {
       (player) => player.id
     );
 
+    setLoading(true);
+
     // API를 통해 게임 결과 저장
     try {
       const response = await fetch("/api/game", {
@@ -180,6 +185,9 @@ const TodaysGame = () => {
       }
     } catch (error) {
       console.error("Error saving game result:", error);
+    } finally {
+      // 로딩 상태 종료
+      setLoading(false);
     }
   };
 
@@ -277,10 +285,10 @@ const TodaysGame = () => {
       <div className="text-center mt-6">
         <button
           onClick={saveGameResult}
-          disabled={!winningTeam}
+          disabled={loading || !winningTeam}
           className="px-4 py-2 bg-blue-500 text-white rounded-md"
         >
-          Save Game Result
+          {loading ? <span>Saving...</span> : <span>Save Game Result</span>}
         </button>
       </div>
       {/* 최근 저장한 GameResult 표시 */}

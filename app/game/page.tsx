@@ -29,6 +29,7 @@ const GameResults = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<GameResult | null>(null);
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState<boolean>(false); // 로딩 상태 추가
 
   // 날짜 변경 핸들러
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +87,7 @@ const GameResults = () => {
 
   // 게임 결과 삭제
   const handleDeleteGame = async (gameId: string) => {
+    setLoading(true); // 로딩 시작
     try {
       const response = await fetch(`/api/game/${gameId}`, {
         method: "DELETE",
@@ -96,6 +98,8 @@ const GameResults = () => {
       }
     } catch (error) {
       console.error("Failed to delete game:", error);
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
 
@@ -107,6 +111,8 @@ const GameResults = () => {
 
   const handleEditGameSubmit = async () => {
     if (!selectedGame) return;
+
+    setLoading(true); // 로딩 시작
 
     try {
       const response = await fetch(`/api/game/${selectedGame.id}`, {
@@ -127,6 +133,8 @@ const GameResults = () => {
       }
     } catch (error) {
       console.error("Failed to edit game:", error);
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
 
@@ -243,8 +251,9 @@ const GameResults = () => {
                 <button
                   onClick={() => handleDeleteGame(result.id)}
                   className="px-4 py-2 bg-red-500 text-white rounded-md"
+                  disabled={loading} // 로딩 중 버튼 비활성화
                 >
-                  Delete
+                  {loading ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>
@@ -269,6 +278,7 @@ const GameResults = () => {
                   setSelectedGame({ ...selectedGame, date: e.target.value })
                 }
                 className="w-full border rounded-md p-2 mt-1"
+                disabled={true}
               />
             </label>
             <div className="mb-4">
@@ -331,8 +341,9 @@ const GameResults = () => {
               <button
                 onClick={handleEditGameSubmit}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                disabled={loading} // 로딩 중 버튼 비활성화
               >
-                Save
+                {loading ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
