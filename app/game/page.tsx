@@ -177,7 +177,7 @@ const GameResults = () => {
         />
       </div>
 
-      <div className="p-4 border rounded-md shadow-md bg-white mb-4">
+      <div className="p-4 border rounded-md shadow-md bg-white text-gray-700 mb-4">
         {/* 총 게임 수 */}
         <p className="text-lg font-medium mb-4">
           Total Games: {gameResults.length}
@@ -220,7 +220,7 @@ const GameResults = () => {
       </div>
 
       {/* 게임 결과 카드 */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 text-gray-700">
         {gameResults.length > 0 ? (
           gameResults.map((result, index) => (
             <div
@@ -266,7 +266,7 @@ const GameResults = () => {
       </div>
       {/* 수정 모달 */}
       {isModalOpen && selectedGame && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-gray-700 text-gray-700 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-md w-96">
             <h2 className="text-lg font-bold mb-4">Edit Game</h2>
             <label className="block mb-4">

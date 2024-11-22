@@ -186,14 +186,13 @@ const TodaysGame = () => {
     } catch (error) {
       console.error("Error saving game result:", error);
     } finally {
-      // 로딩 상태 종료
-      setLoading(false);
+      setLoading(false); // 로딩 종료
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto p-4 bg-white shadow-md rounded-md">
-      <h2 className="text-xl font-semibold text-center mb-4">
+      <h2 className="text-xl font-semibold text-center mb-4 text-gray-700">
         Today Game ({new Date().toLocaleDateString()})
       </h2>
 
@@ -234,15 +233,15 @@ const TodaysGame = () => {
             }`}
             onClick={() => handleTeamSelection("team1")}
           >
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center text-gray-700">
               <h3 className="text-lg font-semibold mb-2">Team 1</h3>
-              <span className="text-sm text-gray-700">
+              <span className="text-sm">
                 {calculateTeamAverageWinRate(team1)}%
               </span>
             </div>
             <ul className="list-disc pl-5">
               {team1.map((player) => (
-                <li key={player.id} className="text-sm">
+                <li key={player.id} className="text-sm ">
                   {player.name}
                 </li>
               ))}

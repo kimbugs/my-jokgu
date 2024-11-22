@@ -101,7 +101,7 @@ const PlayerList = () => {
   const rankedPlayers = assignRanks(sortedPlayers);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-white shadow-md rounded-md">
+    <div className="max-w-2xl mx-auto p-4 text-gray-700 bg-white shadow-md rounded-md">
       <h2 className="text-xl font-semibold text-center mb-3">Player List</h2>
 
       {/* 정렬 기준 선택 UI */}

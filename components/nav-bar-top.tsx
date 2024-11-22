@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import Logout from "./logout";
 import Link from "next/link";
+import DarkMode from "./dark-mode";
 
 export default async function TopNav() {
   const session = await auth();
@@ -71,6 +72,9 @@ export default async function TopNav() {
                   Login
                 </Link>
               )}
+            </li>
+            <li>
+              <DarkMode />
             </li>
           </ul>
         </div>
