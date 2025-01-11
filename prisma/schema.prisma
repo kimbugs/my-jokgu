@@ -30,8 +30,8 @@ model User {
 model Player {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   name        String     @unique
-  win         Int        @default(0)
-  loss        Int        @default(0)
+  winsByYear  Json        @default("{}")
+  lossesByYear        Json        @default("{}")
 }
 
 model GameResult {

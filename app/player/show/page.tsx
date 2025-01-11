@@ -4,25 +4,27 @@ import { useEffect, useState } from "react";
 interface Player {
   id: string;
   name: string;
-  win: number;
-  loss: number;
+  winsByYear: { [year: number]: number };
+  lossesByYear: { [year: number]: number };
 }
 
-// 승률 계산 함수
-const calculateWinRate = (win: number, loss: number): number => {
-  const totalGames = win + loss;
+// 승률 계산 함수 (특정 연도의 승률을 계산)
+const calculateWinRate = (wins: number, losses: number): number => {
+  const totalGames = wins + losses;
   if (totalGames === 0) return 0;
-  return (win / totalGames) * 100;
+  return (wins / totalGames) * 100;
 };
 
 const PlayerList = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortOption, setSortOption] = useState<"wins" | "winRate">("winRate"); // 정렬 기준 상태 추가
+  const [sortOption, setSortOption] = useState<"wins" | "winRate">("winRate");
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  ); // 기본 연도는 현재 연도
 
   useEffect(() => {
-    // 서버에서 플레이어 목록을 가져옵니다.
     const fetchPlayers = async () => {
       try {
         const response = await fetch("/api/player");
@@ -51,16 +53,32 @@ const PlayerList = () => {
     return <div className="text-center text-sm text-red-500">{error}</div>;
   }
 
+  // 선택한 연도의 승률 계산 함수
+  const getWinLossForYear = (player: Player, year: number) => {
+    return {
+      wins: player.winsByYear[year] || 0,
+      losses: player.lossesByYear[year] || 0,
+    };
+  };
+
   // 승률 또는 승 수로 정렬하는 함수
   const sortPlayersByWins = (players: Player[]) => {
-    return [...players].sort((a, b) => b.win - a.win); // 승 수 기준 내림차순
+    return [...players].sort((a, b) => {
+      const aWinLoss = getWinLossForYear(a, selectedYear);
+      const bWinLoss = getWinLossForYear(b, selectedYear);
+      return bWinLoss.wins - aWinLoss.wins;
+    });
   };
 
   const sortPlayersByWinRate = (players: Player[]) => {
-    return [...players].sort(
-      (a, b) =>
-        calculateWinRate(b.win, b.loss) - calculateWinRate(a.win, a.loss)
-    ); // 승률 기준 내림차순
+    return [...players].sort((a, b) => {
+      const aWinLoss = getWinLossForYear(a, selectedYear);
+      const bWinLoss = getWinLossForYear(b, selectedYear);
+      return (
+        calculateWinRate(bWinLoss.wins, bWinLoss.losses) -
+        calculateWinRate(aWinLoss.wins, aWinLoss.losses)
+      );
+    });
   };
 
   // 정렬 기준에 따른 플레이어 목록
@@ -73,23 +91,23 @@ const PlayerList = () => {
   const assignRanks = (players: Player[]) => {
     let rank = 1;
     return players.map((player, index) => {
-      const winRate = calculateWinRate(player.win, player.loss);
-      // const totalGames = player.win + player.loss;
+      const winLoss = getWinLossForYear(player, selectedYear);
+      const winRate = calculateWinRate(winLoss.wins, winLoss.losses);
 
-      // 첫 번째 값이 아니면, 이전 값과 비교하여 순위를 부여
       if (index > 0) {
         const prevPlayer = players[index - 1];
-        const prevWinRate = calculateWinRate(prevPlayer.win, prevPlayer.loss);
-        const prevWin = prevPlayer.win;
+        const prevWinLoss = getWinLossForYear(prevPlayer, selectedYear);
+        const prevWinRate = calculateWinRate(
+          prevWinLoss.wins,
+          prevWinLoss.losses
+        );
 
         if (
-          (sortOption === "wins" && prevWin === player.win) ||
+          (sortOption === "wins" && prevWinLoss.wins === winLoss.wins) ||
           (sortOption === "winRate" && prevWinRate === winRate)
         ) {
-          // 동일한 값일 경우, 동일한 순위
           rank = index + 1;
         } else {
-          // 다르면 순위 증가
           rank = index + 1;
         }
       }
@@ -106,18 +124,45 @@ const PlayerList = () => {
 
       {/* 정렬 기준 선택 UI */}
       <div className="mb-4 text-center">
-        <label htmlFor="sortOption" className="mr-2 text-sm font-medium">
-          Sort by:
-        </label>
-        <select
-          id="sortOption"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value as "wins" | "winRate")}
-          className="p-2 border rounded-md text-sm"
-        >
-          <option value="wins">Wins</option>
-          <option value="winRate">Win Rate</option>
-        </select>
+        <div className="flex items-center justify-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <label htmlFor="sortOption" className="text-sm font-medium">
+              Sort by:
+            </label>
+            <select
+              id="sortOption"
+              value={sortOption}
+              onChange={(e) =>
+                setSortOption(e.target.value as "wins" | "winRate")
+              }
+              className="p-2 border rounded-md text-sm"
+            >
+              <option value="wins">Wins</option>
+              <option value="winRate">Win Rate</option>
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <label htmlFor="year" className="text-sm font-medium">
+              Select Year:
+            </label>
+            <select
+              id="year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="p-2 border rounded-md text-sm"
+            >
+              {Array.from({ length: 5 }).map((_, i) => {
+                const year = new Date().getFullYear() - i;
+                return (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
       </div>
 
       {rankedPlayers.length === 0 ? (
@@ -127,8 +172,9 @@ const PlayerList = () => {
       ) : (
         <ul className="space-y-3">
           {rankedPlayers.map((player) => {
-            const winRate = calculateWinRate(player.win, player.loss);
-            const totalGames = player.win + player.loss; // 총 전적
+            const winLoss = getWinLossForYear(player, selectedYear);
+            const winRate = calculateWinRate(winLoss.wins, winLoss.losses);
+            const totalGames = winLoss.wins + winLoss.losses;
 
             return (
               <li
@@ -140,8 +186,8 @@ const PlayerList = () => {
                 </span>
                 <div className="flex items-center space-x-3 text-xs">
                   <span className="text-gray-500">Total: {totalGames}</span>
-                  <span className="text-green-500">Wins: {player.win}</span>
-                  <span className="text-red-500">Losses: {player.loss}</span>
+                  <span className="text-green-500">Wins: {winLoss.wins}</span>
+                  <span className="text-red-500">Losses: {winLoss.losses}</span>
                   <span className="text-blue-500">
                     Win Rate: {winRate.toFixed(2)}%
                   </span>

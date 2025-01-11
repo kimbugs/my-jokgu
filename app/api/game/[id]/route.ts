@@ -14,6 +14,7 @@ export async function DELETE(
       select: {
         winPlayerIds: true,
         lossPlayerIds: true,
+        date: true,
       },
     });
 
@@ -24,25 +25,59 @@ export async function DELETE(
       );
     }
 
+    const year = gameResult.date.getFullYear();
+    const winPlayerIds = gameResult.winPlayerIds;
+    const lossPlayerIds = gameResult.lossPlayerIds;
+
+    // 전체 플레이어를 가져옵니다.
+    const players = await prisma.player.findMany({
+      where: {
+        id: {
+          in: [...winPlayerIds, ...lossPlayerIds], // 승패에 연관된 플레이어만 가져옵니다.
+        },
+      },
+      select: {
+        id: true,
+        winsByYear: true,
+        lossesByYear: true,
+      },
+    });
+
     // 게임 결과 삭제
     await prisma.gameResult.delete({
       where: { id },
     });
 
-    // 승리한 플레이어들의 win 감소, 패배한 플레이어들의 loss 감소
+    // 각 플레이어의 데이터를 업데이트
     await prisma.$transaction([
-      ...gameResult.winPlayerIds.map((id) =>
-        prisma.player.update({
-          where: { id: id },
-          data: { win: { decrement: 1 } },
-        })
-      ),
-      ...gameResult.lossPlayerIds.map((id) =>
-        prisma.player.update({
-          where: { id: id },
-          data: { loss: { decrement: 1 } },
-        })
-      ),
+      ...players.map((player) => {
+        // winsByYear와 lossesByYear는 JSON 객체로 저장되어 있으므로, 타입을 명시적으로 캐스팅합니다.
+        const winsByYear = player.winsByYear as { [key: number]: number };
+        const lossesByYear = player.lossesByYear as { [key: number]: number };
+
+        // 해당 연도의 승리와 패배를 업데이트
+        const updatedWinsByYear = {
+          ...winsByYear,
+          [year]:
+            (winsByYear[year] || 0) -
+            (winPlayerIds.includes(player.id) ? 1 : 0),
+        };
+
+        const updatedLossesByYear = {
+          ...lossesByYear,
+          [year]:
+            (lossesByYear[year] || 0) -
+            (lossPlayerIds.includes(player.id) ? 1 : 0),
+        };
+
+        return prisma.player.update({
+          where: { id: player.id },
+          data: {
+            winsByYear: updatedWinsByYear,
+            lossesByYear: updatedLossesByYear,
+          },
+        });
+      }),
     ]);
 
     return NextResponse.json(
@@ -82,6 +117,7 @@ export async function PUT(
       select: {
         winPlayerIds: true,
         lossPlayerIds: true,
+        date: true,
       },
     });
 
@@ -96,20 +132,52 @@ export async function PUT(
     const oldWinPlayerIds = gameResult.winPlayerIds;
     const oldLossPlayerIds = gameResult.lossPlayerIds;
 
-    // 통계 갱신: 기존 팀의 승/패 감소
+    const year = gameResult.date.getFullYear();
+
+    // 전체 플레이어를 가져옵니다.
+    const players = await prisma.player.findMany({
+      where: {
+        id: {
+          in: [...oldWinPlayerIds, ...oldLossPlayerIds], // 승패에 연관된 플레이어만 가져옵니다.
+        },
+      },
+      select: {
+        id: true,
+        winsByYear: true,
+        lossesByYear: true,
+      },
+    });
+
+    // 각 플레이어의 데이터를 업데이트
     await prisma.$transaction([
-      ...oldWinPlayerIds.map((playerId) =>
-        prisma.player.update({
-          where: { id: playerId },
-          data: { win: { decrement: 1 } },
-        })
-      ),
-      ...oldLossPlayerIds.map((playerId) =>
-        prisma.player.update({
-          where: { id: playerId },
-          data: { loss: { decrement: 1 } },
-        })
-      ),
+      ...players.map((player) => {
+        // winsByYear와 lossesByYear는 JSON 객체로 저장되어 있으므로, 타입을 명시적으로 캐스팅합니다.
+        const winsByYear = player.winsByYear as { [key: number]: number };
+        const lossesByYear = player.lossesByYear as { [key: number]: number };
+
+        // 해당 연도의 승리와 패배를 업데이트
+        const updatedWinsByYear = {
+          ...winsByYear,
+          [year]:
+            (winsByYear[year] || 0) -
+            (oldWinPlayerIds.includes(player.id) ? 1 : 0),
+        };
+
+        const updatedLossesByYear = {
+          ...lossesByYear,
+          [year]:
+            (lossesByYear[year] || 0) -
+            (oldLossPlayerIds.includes(player.id) ? 1 : 0),
+        };
+
+        return prisma.player.update({
+          where: { id: player.id },
+          data: {
+            winsByYear: updatedWinsByYear,
+            lossesByYear: updatedLossesByYear,
+          },
+        });
+      }),
     ]);
 
     // 게임 결과 업데이트
@@ -126,20 +194,50 @@ export async function PUT(
       },
     });
 
-    // 통계 갱신: 새로운 팀의 승/패 증가
+    // 전체 플레이어를 가져옵니다.
+    const newPlayers = await prisma.player.findMany({
+      where: {
+        id: {
+          in: [...winPlayerIds, ...lossPlayerIds], // 승패에 연관된 플레이어만 가져옵니다.
+        },
+      },
+      select: {
+        id: true,
+        winsByYear: true,
+        lossesByYear: true,
+      },
+    });
+
+    // 각 플레이어의 데이터를 업데이트
     await prisma.$transaction([
-      ...winPlayerIds.map((playerId) =>
-        prisma.player.update({
-          where: { id: playerId },
-          data: { win: { increment: 1 } },
-        })
-      ),
-      ...lossPlayerIds.map((playerId) =>
-        prisma.player.update({
-          where: { id: playerId },
-          data: { loss: { increment: 1 } },
-        })
-      ),
+      ...newPlayers.map((player) => {
+        // winsByYear와 lossesByYear는 JSON 객체로 저장되어 있으므로, 타입을 명시적으로 캐스팅합니다.
+        const winsByYear = player.winsByYear as { [key: number]: number };
+        const lossesByYear = player.lossesByYear as { [key: number]: number };
+
+        // 해당 연도의 승리와 패배를 업데이트
+        const updatedWinsByYear = {
+          ...winsByYear,
+          [year]:
+            (winsByYear[year] || 0) +
+            (winPlayerIds.includes(player.id) ? 1 : 0),
+        };
+
+        const updatedLossesByYear = {
+          ...lossesByYear,
+          [year]:
+            (lossesByYear[year] || 0) +
+            (lossPlayerIds.includes(player.id) ? 1 : 0),
+        };
+
+        return prisma.player.update({
+          where: { id: player.id },
+          data: {
+            winsByYear: updatedWinsByYear,
+            lossesByYear: updatedLossesByYear,
+          },
+        });
+      }),
     ]);
 
     return NextResponse.json(updatedGame, { status: 200 });
